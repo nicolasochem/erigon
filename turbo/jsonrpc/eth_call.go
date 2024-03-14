@@ -600,6 +600,16 @@ func (api *BaseAPI) getWitness(ctx context.Context, db kv.RoDB, blockNrOrHash rp
 	for i, txn := range block.Transactions() {
 		statedb.SetTxContext(txn.Hash(), block.Hash(), i)
 
+		// Ensure that the access list is loaded into witness
+		for _, a := range txn.GetAccessList() {
+			statedb.GetBalance(a.Address)
+
+			for _, k := range a.StorageKeys {
+				v := uint256.NewInt(0)
+				statedb.GetState(a.Address, &k, v)
+			}
+		}
+
 		receipt, _, err := core.ApplyTransaction(chainConfig, getHashFn, api.engine(), nil, gp, statedb, trieStateWriter, block.Header(), txn, usedGas, usedBlobGas, vmConfig)
 		if err != nil {
 			return nil, err
