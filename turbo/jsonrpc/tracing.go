@@ -173,6 +173,17 @@ func (api *PrivateDebugAPIImpl) traceBlock(ctx context.Context, blockNrOrHash rp
 			BlockNum:          block.NumberU64(),
 		}
 
+		if *config.Tracer == "zeroTracer" {
+			for _, a := range txn.GetAccessList() {
+				ibs.GetBalance(a.Address)
+
+				for _, k := range a.StorageKeys {
+					v := uint256.NewInt(0)
+					ibs.GetState(a.Address, &k, v)
+				}
+			}
+		}
+
 		if isBorStateSyncTxn {
 			err = polygontracer.TraceBorStateSyncTxnDebugAPI(
 				ctx,

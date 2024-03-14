@@ -62,6 +62,14 @@ func (t *zeroTracer) CaptureStart(env *vm.EVM, from libcommon.Address, to libcom
 		t.addOpCodeToAccount(to, vm.CALL)
 	}
 
+	for _, a := range t.ctx.Txn.GetAccessList() {
+		t.addAccountToTrace(a.Address)
+
+		for _, k := range a.StorageKeys {
+			t.addSLOADToAccount(a.Address, k)
+		}
+	}
+
 	// The recipient balance includes the value transferred.
 	toBal := new(big.Int).Sub(t.tx.Traces[to].Balance.ToBig(), value.ToBig())
 	t.tx.Traces[to].Balance = uint256.MustFromBig(toBal)
