@@ -12,9 +12,7 @@ import (
 	"github.com/ledgerwatch/log/v3"
 
 	"github.com/ledgerwatch/erigon-lib/common"
-	"github.com/ledgerwatch/erigon-lib/kv"
 
-	"github.com/ledgerwatch/erigon/cmd/state/stateless"
 	"github.com/ledgerwatch/erigon/core/vm/evmtypes"
 
 	"github.com/ledgerwatch/erigon-lib/common/hexutil"
@@ -173,17 +171,6 @@ func (api *PrivateDebugAPIImpl) traceBlock(ctx context.Context, blockNrOrHash rp
 			BlockNum:          block.NumberU64(),
 		}
 
-		if *config.Tracer == "zeroTracer" {
-			for _, a := range txn.GetAccessList() {
-				ibs.GetBalance(a.Address)
-
-				for _, k := range a.StorageKeys {
-					v := uint256.NewInt(0)
-					ibs.GetState(a.Address, &k, v)
-				}
-			}
-		}
-
 		if isBorStateSyncTxn {
 			err = polygontracer.TraceBorStateSyncTxnDebugAPI(
 				ctx,
@@ -236,9 +223,9 @@ func (api *PrivateDebugAPIImpl) traceBlock(ctx context.Context, blockNrOrHash rp
 		var witness_bytes []byte
 
 		// Try read from DB
-		if block.NumberU64() > 0 {
-			witness_bytes, err = stateless.ReadChunks(tx, kv.Witnesses, k)
-		}
+		// if block.NumberU64() > 0 {
+		// 	witness_bytes, err = stateless.ReadChunks(tx, kv.Witnesses, k)
+		// }
 
 		// If not found, compute witness directly
 		if len(witness_bytes) == 0 || err != nil {
