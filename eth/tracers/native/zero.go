@@ -233,19 +233,23 @@ func (t *zeroTracer) CaptureTxEnd(restGas uint64) {
 		// 	fmt.Printf("Address: %s, opcodes: %v\n", addr.String(), t.addrOpCodes[addr])
 		// }
 
-		// We don't need to provide the actual bytecode UNLESS the opcode is the following:
-		// DELEGATECALL, CALL, STATICCALL, CALLCODE, EXTCODECOPY, EXTCODEHASH, EXTCODESIZE
-		if trace.CodeUsage != nil && trace.CodeUsage.Read != nil && t.addrOpCodes[addr] != nil {
-			opCodes := []vm.OpCode{vm.DELEGATECALL, vm.CALL, vm.STATICCALL, vm.CALLCODE, vm.EXTCODECOPY,
-				vm.EXTCODEHASH, vm.EXTCODESIZE}
-			keep := false
-			for _, opCode := range opCodes {
-				if _, ok := t.addrOpCodes[addr][opCode]; ok {
-					keep = true
-					break
+		if trace.CodeUsage != nil && trace.CodeUsage.Read != nil {
+			if t.addrOpCodes[addr] != nil {
+				// We don't need to provide the actual bytecode UNLESS the opcode is the following:
+				// DELEGATECALL, CALL, STATICCALL, CALLCODE, EXTCODECOPY, EXTCODEHASH, EXTCODESIZE
+				opCodes := []vm.OpCode{vm.DELEGATECALL, vm.CALL, vm.STATICCALL, vm.CALLCODE, vm.EXTCODECOPY,
+					vm.EXTCODEHASH, vm.EXTCODESIZE}
+				keep := false
+				for _, opCode := range opCodes {
+					if _, ok := t.addrOpCodes[addr][opCode]; ok {
+						keep = true
+						break
+					}
 				}
-			}
-			if !keep {
+				if !keep {
+					trace.CodeUsage = nil
+				}
+			} else {
 				trace.CodeUsage = nil
 			}
 		}
