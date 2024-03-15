@@ -589,7 +589,7 @@ func (tds *TrieDbState) resolveAccountAndStorageTouches(accountTouches common.Ha
 		rl = tds.rl
 	}
 
-	accountNibbles := make([][]byte, 0)
+	accountNibbles := make([][]byte, len(accountTouches))
 
 	for _, addrHash := range accountTouches {
 		rl.AddKey(addrHash[:])
