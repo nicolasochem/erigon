@@ -523,6 +523,7 @@ func (api *BaseAPI) getWitness(ctx context.Context, db kv.RoDB, blockNrOrHash rp
 	trieStateWriter := tds.TrieStateWriter()
 
 	statedb := state.New(tds)
+	statedb.SetDisableBalanceInc(true)
 
 	getHeader := func(hash libcommon.Hash, number uint64) *types.Header {
 		h, e := api._blockReader.Header(ctx, tx, hash, number)
