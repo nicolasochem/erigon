@@ -98,19 +98,15 @@ func (t *zeroTracer) CaptureTxStart(gasLimit uint64) {
 
 // CaptureState implements the EVMLogger interface to trace a single step of VM execution.
 func (t *zeroTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, scope *vm.ScopeContext, rData []byte, depth int, err error) {
+	if err != nil {
+		return
+	}
+
 	// Skip if tracing was interrupted
 	if t.interrupt.Load() {
 		return
 	}
 
-	t.captureOpcode(pc, op, gas, cost, scope)
-}
-
-func (t *zeroTracer) CaptureFault(pc uint64, op vm.OpCode, gas, cost uint64, scope *vm.ScopeContext, depth int, err error) {
-	t.captureOpcode(pc, op, gas, cost, scope)
-}
-
-func (t *zeroTracer) captureOpcode(pc uint64, op vm.OpCode, gas, cost uint64, scope *vm.ScopeContext) {
 	stack := scope.Stack
 	stackData := stack.Data
 	stackLen := len(stackData)
