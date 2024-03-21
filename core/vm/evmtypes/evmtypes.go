@@ -45,7 +45,6 @@ type TxContext struct {
 	BlobHashes        []common.Hash  // Provides versioned blob hashes for BLOBHASH
 	Txn               types.Transaction
 	CumulativeGasUsed *uint64
-	BlockNum          uint64
 }
 
 type (
