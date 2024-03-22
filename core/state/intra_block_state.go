@@ -407,6 +407,13 @@ func (sdb *IntraBlockState) GetIncarnation(addr libcommon.Address) uint64 {
 	return 0
 }
 
+func (sdb *IntraBlockState) HasLiveAccount(addr libcommon.Address) bool {
+	if stateObject := sdb.stateObjects[addr]; stateObject != nil {
+		return true
+	}
+	return false
+}
+
 func (sdb *IntraBlockState) HasLiveState(addr libcommon.Address, key *libcommon.Hash) bool {
 	if stateObject := sdb.stateObjects[addr]; stateObject != nil {
 		if _, ok := stateObject.originStorage[*key]; ok {

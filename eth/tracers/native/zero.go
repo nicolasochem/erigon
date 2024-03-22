@@ -122,9 +122,11 @@ func (t *zeroTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, sco
 		slot := libcommon.Hash(stackData[stackLen-1].Bytes32())
 
 		// If the SSTORE is out of gas and the slot is in live state, we will add the slot to account read
-		if err == vm.ErrOutOfGas && t.env.IntraBlockState().HasLiveState(caller, &slot) {
-			t.addAccountToTrace(caller)
-			t.addSLOADToAccount(caller, slot)
+		if err == vm.ErrOutOfGas {
+			if t.env.IntraBlockState().HasLiveState(caller, &slot) {
+				t.addAccountToTrace(caller)
+				t.addSLOADToAccount(caller, slot)
+			}
 			return
 		}
 		t.addAccountToTrace(caller)
@@ -138,7 +140,9 @@ func (t *zeroTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, sco
 
 		// If the call is out of gas, we will add account but not the opcode
 		if err == vm.ErrOutOfGas && op == vm.CALL {
-			t.addAccountToTrace(addr)
+			if t.env.IntraBlockState().HasLiveAccount(addr) {
+				t.addAccountToTrace(addr)
+			}
 			return
 		}
 		t.addAccountToTrace(addr)
