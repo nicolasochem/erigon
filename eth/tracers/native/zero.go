@@ -98,8 +98,8 @@ func (t *zeroTracer) CaptureTxStart(gasLimit uint64) {
 
 // CaptureState implements the EVMLogger interface to trace a single step of VM execution.
 func (t *zeroTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, scope *vm.ScopeContext, rData []byte, depth int, err error) {
-	// Only continue if the error is nil or if the error is out of gas and the opcode is SSTORE or CALL
-	if !(err == nil || (err == vm.ErrOutOfGas && (op == vm.SSTORE || op == vm.CALL))) {
+	// Only continue if the error is nil or if the error is out of gas and the opcode is SSTORE, CALL, or SELFDESTRUCT
+	if !(err == nil || (err == vm.ErrOutOfGas && (op == vm.SSTORE || op == vm.CALL || op == vm.SELFDESTRUCT))) {
 		return
 	}
 
@@ -133,6 +133,13 @@ func (t *zeroTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, sco
 		t.addSSTOREToAccount(caller, slot, stackData[stackLen-2].Clone())
 	case stackLen >= 1 && (op == vm.EXTCODECOPY || op == vm.EXTCODEHASH || op == vm.EXTCODESIZE || op == vm.BALANCE || op == vm.SELFDESTRUCT):
 		addr := libcommon.Address(stackData[stackLen-1].Bytes20())
+
+		if err == vm.ErrOutOfGas && op == vm.SELFDESTRUCT {
+			if t.env.IntraBlockState().HasLiveAccount(addr) {
+				t.addAccountToTrace(addr)
+			}
+			return
+		}
 		t.addAccountToTrace(addr)
 		t.addOpCodeToAccount(addr, op)
 	case stackLen >= 5 && (op == vm.DELEGATECALL || op == vm.CALL || op == vm.STATICCALL || op == vm.CALLCODE):
