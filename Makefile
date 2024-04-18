@@ -10,7 +10,7 @@ ERIGON_USER ?= erigon
 # if using volume-mounting data dir, then must exist on host OS
 DOCKER_UID ?= $(shell id -u)
 DOCKER_GID ?= $(shell id -g)
-DOCKER_TAG ?= thorax/erigon:latest
+DOCKER_TAG ?= ghcr.io/nicolasochem/erigon:latest
 
 # Variables below for building on host OS, and are ignored for docker
 #
@@ -319,7 +319,7 @@ coverage:
 ## hive:                              run hive test suite locally using docker e.g. OUTPUT_DIR=~/results/hive SIM=ethereum/engine make hive
 .PHONY: hive
 hive:
-	DOCKER_TAG=thorax/erigon:ci-local make docker
+	DOCKER_TAG=ghcr.io/nicolasochem/erigon:ci-local make docker
 	docker pull thorax/hive:latest
 	docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(OUTPUT_DIR):/work thorax/hive:latest --sim $(SIM) --results-root=/work/results --client erigon_ci-local # run erigon
 
